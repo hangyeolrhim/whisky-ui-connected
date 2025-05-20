@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { fetchWhiskyHistory } from "./api/fetchWhisky";
 import WhiskyChart from "./components/WhiskyChart";
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 export default function App() {
   const [whisky, setWhisky] = useState("macallan 18");
@@ -10,10 +11,25 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await fetchWhiskyHistory(whisky);
-      setData(result);
-    } catch (error) {
-      console.error("API 호출 오류:", error);
+      const response = await fetch(`${API_BASE}/whiskies`);
+      const all = await response.json();
+
+      const match = all.find(w =>
+        w.name.toLowerCase().includes(whisky.toLowerCase())
+      );
+
+      if (match) {
+        const history = {
+          "2024-05-01": {
+            prices: [{ source: "user", price: match.purchase_price }]
+          }
+        };
+        setData({ history });
+      } else {
+        setData(null);
+      }
+    } catch (err) {
+      console.error("API 호출 오류:", err);
       setData(null);
     }
     setLoading(false);
