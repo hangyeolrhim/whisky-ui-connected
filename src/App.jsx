@@ -1,66 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 function App() {
   const [query, setQuery] = useState("");
-  const [data, setData] = useState([]);
-  const [file, setFile] = useState(null);
+  const [whiskies, setWhiskies] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedUrl, setUploadedUrl] = useState("");
+  const [selectedWhisky, setSelectedWhisky] = useState(null);
 
-  const fetchData = async () => {
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/whiskies`);
-      const filtered = res.data
-        .filter((w) => w.name.toLowerCase().includes(query.toLowerCase()))
-        .map((w) => ({
-          name: "user",
-          date: w.purchase_date,
-          price: w.purchase_price,
-        }));
-      setData(filtered);
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [query]);
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleUpload = async () => {
-    if (!file) return alert("파일을 선택해주세요.");
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/upload-photo`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setUploadedUrl(`${process.env.REACT_APP_API_BASE_URL}/photos/${res.data.filename}`);
-    } catch (error) {
-      console.error("Upload error:", error);
-    }
+  const fetchWhiskies = async () => {
+    const res = await axios.get(`${API_BASE}/whiskies`);
+    setWhiskies(res.data);
   };
 
   const handleRegister = async () => {
@@ -78,50 +30,96 @@ function App() {
       image_url: uploadedUrl,
     };
 
-    try {
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/whiskies`, body);
-      fetchData();
-    } catch (error) {
-      console.error("Register error:", error);
-    }
+    await axios.post(`${API_BASE}/whiskies`, body);
+    setQuery("");
+    fetchWhiskies();
   };
 
+  const handleImageUpload = async () => {
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    const res = await axios.post(`${API_BASE}/upload-photo`, formData);
+    setUploadedUrl(`${API_BASE}/photos/${res.data.filename}`);
+  };
+
+  useEffect(() => {
+    fetchWhiskies();
+  }, []);
+
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 20 }}>
       <h1>📈 위스키 시세 추적</h1>
+
       <input
-        type="text"
+        placeholder="macallan 18"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Macallan 18"
-        style={{ width: 500, height: 30, fontSize: 16 }}
       />
-      <button style={{ marginLeft: 10 }} onClick={handleRegister}>+ 시세 등록</button>
+      <button onClick={handleRegister}>+ 시세 등록</button>
 
-      {data.length > 0 ? (
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data} margin={{ top: 30, right: 30, bottom: 5, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis domain={['dataMin - 10000', 'dataMax + 10000']} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="price" name="user" stroke="#8884d8" activeDot={{ r: 8 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      ) : (
-        <p>데이터가 없습니다.</p>
+      <hr />
+
+      <h2>📷 이미지 업로드</h2>
+      <input
+        type="file"
+        onChange={(e) => setSelectedFile(e.target.files[0])}
+      />
+      <button onClick={handleImageUpload}>업로드</button>
+      {uploadedUrl && (
+        <>
+          <p>업로드 성공:</p>
+          <img src={uploadedUrl} alt="preview" width={150} />
+        </>
       )}
 
-      <hr style={{ margin: "40px 0" }} />
+      <hr />
 
-      <h2>📸 이미지 업로드</h2>
-      <input type="file" accept="image/*" onChange={handleFileChange} />
-      <button onClick={handleUpload}>업로드</button>
-      {uploadedUrl && (
-        <div>
-          <p>업로드 성공:</p>
-          <img src={uploadedUrl} alt="preview" width={200} />
+      <h2>📋 위스키 목록</h2>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+        {whiskies.map((w) => (
+          <div
+            key={w.id}
+            onClick={() => setSelectedWhisky(w)}
+            style={{
+              border: "1px solid #ccc",
+              borderRadius: 10,
+              padding: 10,
+              width: 200,
+              cursor: "pointer",
+            }}
+          >
+            {w.image_url && (
+              <img
+                src={w.image_url}
+                alt={w.name}
+                style={{ width: "100%", height: 120, objectFit: "cover" }}
+              />
+            )}
+            <h4>{w.name}</h4>
+            <p>{w.year}년산</p>
+            <p>{w.purchase_price.toLocaleString()}원</p>
+          </div>
+        ))}
+      </div>
+
+      {selectedWhisky && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+          backgroundColor: "rgba(0,0,0,0.6)", display: "flex",
+          justifyContent: "center", alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{ background: "white", padding: 20, borderRadius: 10, width: 400 }}>
+            <h3>{selectedWhisky.name}</h3>
+            {selectedWhisky.image_url && (
+              <img src={selectedWhisky.image_url} alt="whisky" style={{ width: "100%", borderRadius: 5 }} />
+            )}
+            <p><strong>연도:</strong> {selectedWhisky.year}</p>
+            <p><strong>가격:</strong> {selectedWhisky.purchase_price.toLocaleString()}원</p>
+            <p><strong>구입일:</strong> {selectedWhisky.purchase_date}</p>
+            <p><strong>보관 위치:</strong> {selectedWhisky.storage_location}</p>
+            <button onClick={() => setSelectedWhisky(null)}>닫기</button>
+          </div>
         </div>
       )}
     </div>
