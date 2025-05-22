@@ -75,7 +75,7 @@ function App() {
       purchase_price: 450000,
       purchase_date: new Date().toISOString().slice(0, 10),
       storage_location: "vault",
-      image_url: "",
+      image_url: uploadedUrl,
     };
 
     try {
