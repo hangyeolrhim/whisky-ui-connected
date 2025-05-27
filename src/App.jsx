@@ -18,12 +18,8 @@ const App = () => {
     }
 
     const fetchData = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/whiskies?name=${query}`);
-        setWhiskies(res.data);
-      } catch (err) {
-        console.error("데이터 불러오기 실패:", err);
-      }
+      const res = await axios.get(`${API_BASE_URL}/whiskies?name=${query}`);
+      setWhiskies(res.data);
     };
     fetchData();
   }, [query, API_BASE_URL]);
@@ -33,13 +29,8 @@ const App = () => {
     const formData = new FormData();
     formData.append('file', image);
 
-    try {
-      const res = await axios.post(`${API_BASE_URL}/upload`, formData);
-      setUploadedUrl(res.data.url);
-      console.log("업로드된 이미지 URL:", res.data.url);
-    } catch (err) {
-      console.error("이미지 업로드 실패:", err);
-    }
+    const res = await axios.post(`${API_BASE_URL}/upload`, formData);
+    setUploadedUrl(res.data.url);
   };
 
   const handleRegister = async () => {
@@ -57,15 +48,11 @@ const App = () => {
       image_url: uploadedUrl,
     };
 
-    try {
-      await axios.post(`${API_BASE_URL}/whiskies`, body);
-      alert('시세 등록 완료');
-      setQuery('');
-      setImage(null);
-      setUploadedUrl('');
-    } catch (err) {
-      console.error("시세 등록 실패:", err);
-    }
+    await axios.post(`${API_BASE_URL}/whiskies`, body);
+    alert('시세 등록 완료');
+    setQuery('');
+    setImage(null);
+    setUploadedUrl('');
   };
 
   return (
@@ -112,16 +99,9 @@ const App = () => {
                   cursor: 'pointer'
                 }}
               >
-                <img
-                  src={w.image_url}
-                  alt={w.name}
-                  width="100%"
-                  style={{ borderRadius: 4 }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/default_whisky.png";
-                  }}
-                />
+                {w.image_url && (
+                  <img src={w.image_url} alt={w.name} width="100%" style={{ borderRadius: 4 }} />
+                )}
                 <h3>{w.name}</h3>
                 <p>{w.year}년산</p>
                 <p>{w.purchase_price.toLocaleString()}원</p>
