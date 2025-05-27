@@ -26,11 +26,17 @@ const WhiskyDetail = ({ whisky, allWhiskies, onBack }) => {
       <p><strong>가격:</strong> {whisky.purchase_price.toLocaleString()}원</p>
       <p><strong>구매일:</strong> {whisky.purchase_date}</p>
       <p><strong>보관 장소:</strong> {whisky.storage_location}</p>
-      {whisky.image_url && (
-        <div style={{ marginTop: '10px' }}>
-          <img src={whisky.image_url} alt={whisky.name} width="200" />
-        </div>
-      )}
+      <div style={{ marginTop: '10px' }}>
+        <img
+          src={whisky.image_url || "/default_whisky.png"}
+          alt={whisky.name}
+          width="200"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/default_whisky.png";
+          }}
+        />
+      </div>
 
       <h3 style={{ marginTop: '40px' }}>📈 가격 히스토리</h3>
       {priceHistory.length > 0 ? (
