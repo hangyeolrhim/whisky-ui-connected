@@ -55,6 +55,13 @@ const App = () => {
     setUploadedUrl('');
   };
 
+  const handleDelete = async (id) => {
+    const ok = window.confirm("정말 삭제하시겠습니까?");
+    if (!ok) return;
+    await axios.delete(`${API_BASE_URL}/whiskies/${id}`);
+    setWhiskies(whiskies.filter(w => w.id !== id));
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>📈 위스키 시세 추적</h1>
@@ -96,9 +103,28 @@ const App = () => {
                   borderRadius: 8,
                   padding: 10,
                   width: 200,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  position: 'relative'
                 }}
               >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(w.id);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 4,
+                    right: 4,
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'red',
+                    cursor: 'pointer',
+                    fontSize: 16
+                  }}
+                >
+                  🗑
+                </button>
                 {w.image_url && (
                   <img src={w.image_url} alt={w.name} width="100%" style={{ borderRadius: 4 }} />
                 )}
