@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import WhiskyDetail from "./WhiskyDetail";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
@@ -46,6 +47,10 @@ function App() {
   useEffect(() => {
     fetchWhiskies();
   }, []);
+
+  if (selectedWhisky) {
+    return <WhiskyDetail whisky={selectedWhisky} onBack={() => setSelectedWhisky(null)} />;
+  }
 
   return (
     <div style={{ padding: 20 }}>
@@ -102,26 +107,6 @@ function App() {
           </div>
         ))}
       </div>
-
-      {selectedWhisky && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          backgroundColor: "rgba(0,0,0,0.6)", display: "flex",
-          justifyContent: "center", alignItems: "center", zIndex: 1000
-        }}>
-          <div style={{ background: "white", padding: 20, borderRadius: 10, width: 400 }}>
-            <h3>{selectedWhisky.name}</h3>
-            {selectedWhisky.image_url && (
-              <img src={selectedWhisky.image_url} alt="whisky" style={{ width: "100%", borderRadius: 5 }} />
-            )}
-            <p><strong>연도:</strong> {selectedWhisky.year}</p>
-            <p><strong>가격:</strong> {selectedWhisky.purchase_price.toLocaleString()}원</p>
-            <p><strong>구입일:</strong> {selectedWhisky.purchase_date}</p>
-            <p><strong>보관 위치:</strong> {selectedWhisky.storage_location}</p>
-            <button onClick={() => setSelectedWhisky(null)}>닫기</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
