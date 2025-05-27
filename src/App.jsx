@@ -61,7 +61,7 @@ function App() {
     <div style={{ padding: 20 }}>
       <h1>📈 위스키 시세 추적</h1>
       {selectedWhisky ? (
-        <WhiskyDetail whisky={selectedWhisky} onBack={() => setSelectedWhisky(null)} />
+        <WhiskyDetail whisky={selectedWhisky} allWhiskies={whiskies} onBack={() => setSelectedWhisky(null)} />
       ) : (
         <>
           <div style={{ marginBottom: 10 }}>
