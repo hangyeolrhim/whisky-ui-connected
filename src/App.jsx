@@ -29,8 +29,8 @@ const App = () => {
     const formData = new FormData();
     formData.append('file', image);
 
-    const res = await axios.post(`${API_BASE_URL}/upload`, formData);
-    setUploadedUrl(res.data.url);
+    const res = await axios.post(`${API_BASE_URL}/upload-photo`, formData);
+    setUploadedUrl(`${API_BASE_URL}/photos/${res.data.filename}`);
   };
 
   const handleRegister = async () => {
